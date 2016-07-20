@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Schyntax : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Schyntax</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/schyntax">View on GitHub</a>
+
+          <h1 id="project_title">Schyntax</h1>
+          <h2 id="project_tagline"></h2>
+
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="" class="anchor" href="#" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><img src="https://avatars1.githubusercontent.com/u/8682785?v=2&amp;s=200" alt="">
+</h1>
+
+<p>Schyntax is a domain-specific language for defining event schedules in a terse, but readable, format. For example, if you want something to run every five minutes, you could write <code>min(*%5)</code>.</p>
+
+<p>This project holds the language documentation and <a href="https://github.com/schyntax/schyntax/blob/master/tests.json">official test suite</a>. The reference implementation is <a href="https://github.com/schyntax/cs-schyntax">C# Schyntax</a>. The is also a fully-compatible <a href="https://github.com/schyntax/js-schyntax">JavaScript implementation</a>.</p>
+
+<p><strong>If you're interested in porting Schyntax to another language, please <a href="https://github.com/schyntax/schyntax/blob/master/Porting.md">read this</a>.</strong></p>
+
+<h2>
+<a id="syntax" class="anchor" href="#syntax" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Syntax</h2>
+
+<p>Format strings are composed of <a href="#groups">groups</a> and <a href="#expressions">expressions</a>.</p>
+
+<p>General Syntax Rules:</p>
+
+<ul>
+<li>Expression uses a similar syntax as function calls in C-Style languages: <code>name(arg0, arg1, arg2)</code>. The commas between arguments are optional.</li>
+<li>Format strings are case-insensitive. <code>dayofmonth</code> is equivalent to <code>DAYOFMONTH</code> or <code>dayOfMonth</code>, etc.</li>
+<li>All whitespace is insignificant.</li>
+<li>Fractional numbers are not supported in any expression.</li>
+<li>An argument preceded by a <code>!</code> is treated as an exclude. <code>days(!sat..sun)</code> means that Saturday through Sunday are excluded from the schedule.</li>
+<li>All expressions accept any number of arguments, and may mix includes and excludes. For example, you might specify every weekday except tuesday as <code>days(mon..fri, !tues)</code>.</li>
+<li>All time-related values are evaluated as UTC. <code>hours(12)</code> will be noon UTC, not noon local.</li>
+<li>Numeric ranges are specified in the form of <code>start..end</code>. For example, <code>days(1..5)</code> is the first five days of the month. The order of start and end is significant, and in cases where <code>start &gt; end</code> it will be interpreted as a range which wraps. In other words, <code>minutes(58..2)</code> means it will run on minutes 58, 59, 0, 1, and 2.</li>
+<li>The <code>..</code> operator is inclusive of the start and end values. <code>1..4</code> is equal to <code>1,2,3,4</code>. There is also a <code>..&lt;</code> operator which is the "half-open" range operator, meaning it is inclusive of the start, but exclusive of the end value. <code>1..&lt;4</code> is equal to <code>1,2,3</code>.</li>
+<li>The wildcard <code>*</code> operator means "any value." For example, <code>min(*)</code> means "run every minute."</li>
+<li>The <code>%</code> operator can be used to define intervals. <code>seconds(*%2)</code> will run on all even seconds. <code>seconds(7%3)</code> will run at 7,10,13, ...,55, and 58 seconds of every minute. <code>seconds(7..19%4)</code> will run at 7,11,15, and 19 seconds. <code>seconds(57..4%2)</code> will run at 57,59,1, and 3 seconds. Note that the interval operation is always relative to the start value in the range.</li>
+</ul>
+
+<h2>
+<a id="expressions" class="anchor" href="#expressions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Expressions</h2>
+
+<p>Expressions allow you to define when you want events to occur or when you explicitly do not want them to occur. If your format string does not contain any expressions, it will be invalid and schyntax will throw an exception.</p>
+
+<h3>
+<a id="seconds" class="anchor" href="#seconds" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>seconds</h3>
+
+<p>Aliases: <code>s</code>, <code>sec</code>, <code>second</code>, <code>secondOfMinute</code>, <code>secondsOfMinute</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 0 and 59 inclusive.</p>
+
+<h3>
+<a id="minutes" class="anchor" href="#minutes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>minutes</h3>
+
+<p>Aliases: <code>m</code>, <code>min</code>, <code>minute</code>, <code>minuteofhour</code>, <code>minutesOfHour</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 0 and 59 inclusive.</p>
+
+<h3>
+<a id="hours" class="anchor" href="#hours" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>hours</h3>
+
+<p>Aliases: <code>h</code>, <code>hour</code>, <code>hourOfDay</code>, <code>hoursOfDay</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 0 and 23 inclusive.</p>
+
+<h3>
+<a id="daysofweek" class="anchor" href="#daysofweek" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>daysOfWeek</h3>
+
+<p>Aliases: <code>day</code>, <code>days</code>, <code>dayOfWeek</code>, <code>dow</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 1 (Sunday) and 7 (Saturday) inclusive. Additionally, you may use textual days. Two or three-character abbreviations are accepted (such as <code>mo..th</code> or <code>mon..thu</code>) as well as full names (<code>monday..thursday</code>). Because <code>tues</code>, <code>thur</code>, and <code>thurs</code> are common abbreviations, those special cases are also accepted, but it may be better to stick to the more predictable 2-3 characters.</p>
+
+<h3>
+<a id="daysofmonth" class="anchor" href="#daysofmonth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>daysOfMonth</h3>
+
+<p>Aliases: <code>dom</code>, <code>dayOfMonth</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 1 and 31 inclusive. A second range from -31 to -1 is also allowed and are counted as days from the end of the month.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>
+<code>dom(-1)</code> The last day of the month.</li>
+<li>
+<code>dom(-5..-1)</code> the last five days of the month.</li>
+<li>
+<code>dom(10..-1)</code> The 10th through the last day of the month.</li>
+</ul>
+
+<h3>
+<a id="daysofyear" class="anchor" href="#daysofyear" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>daysOfYear</h3>
+
+<p>Aliases: <code>doy</code>, <code>dayOfYear</code></p>
+
+<p>Accepts numbers and numeric-range arguments between 1 and 366 inclusive. A second range from -366 to -1 is also allowed and are counted as days from the end of the year.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>
+<code>doy(-1)</code> The last day of the year.</li>
+<li>
+<code>doy(-5..-1)</code> the last five days of the year.</li>
+<li>
+<code>doy(10..-1)</code> January 10th through December 31st.</li>
+</ul>
+
+<h3>
+<a id="dates" class="anchor" href="#dates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dates</h3>
+
+<p>Aliases: <code>date</code></p>
+
+<p>Allows you to include or exclude specific dates or date ranges. Date arguments take the form of <code>m/d</code>. Date ranges are <code>m/d..m/d</code> and are allowed to span across January 1st. If you need to specify a specific year (generally a bad idea), you can use <code>yyyy/m/d</code>. Years 1900 through 2200 are supported.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>
+<code>dates(!12/25, !7/4)</code> Run every day except December 25th and July 4th.</li>
+<li>
+<code>dates(4/1)</code> Only run on April 1st.</li>
+<li>
+<code>dates(4/1 .. 4/30)</code> Only run for the month of April.</li>
+<li>
+<code>dates(4/1 .. 4/30, !4/16)</code> Run every day in April except for April 16th.</li>
+<li>
+<code>dates(!12/25 .. 1/1)</code> Run every day except December 25th through January 1st.</li>
+</ul>
+
+<h2>
+<a id="defaults" class="anchor" href="#defaults" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Defaults</h2>
+
+<p>When a format string does not include all expression types, some assumptions must be made about the missing values. Schyntax looks at the expression with the highest-resolution, and then sets <code>exp_name(0)</code> for any higher-resolution expressions. For example, if <code>hours</code> is the highest resolution specified, then <code>minutes(0) seconds(0)</code> is implicitly added to the format. All day-level expressions (<code>daysOfWeek</code>, <code>daysOfMonth</code>, <code>daysOfYear</code>, <code>dates</code>) are treated as the same resolution. Any other (lower-resolution) missing expression types are considered wildcards, meaning they will match any date/time (equivalent to <code>exp_name(*)</code>).</p>
+
+<p>Here are some examples which illustrate these defaults:</p>
+
+<ul>
+<li>
+<code>minutes(10)</code> will run at ten minutes after the top of every hour on every day.</li>
+<li>
+<code>hours(12)</code> will run at noon UTC everyday.</li>
+<li>
+<code>daysOfWeek(mon..fri)</code> will run at midnight UTC Mondays through Fridays.</li>
+<li>
+<code>daysOfWeek(mon) hours(12)</code> will run at noon UTC on Mondays.</li>
+<li>
+<code>daysOfWeek(mon) minutes(0, 30)</code> will run at the top and half of every hour on Mondays.</li>
+<li>
+<code>daysOfYear(*)</code> will run at midnight (00:00:00) every day.</li>
+</ul>
+
+<h2>
+<a id="groups" class="anchor" href="#groups" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Groups</h2>
+
+<p>Expressions can be grouped using the <code>{ expression, expression, ... }</code> syntax (commas between the expressions are optional). This allows you to setup sets of expressions which are evaluated independently from each other. For example, you may want to have a different set of rules for weekdays vs. weekends.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>
+<code>{hours(10), days(!sat..sun)} {hours(12), days(sat..sun)}</code> Runs 10:00 on weekdays, and noon on weekends.</li>
+<li>
+<code>{dates(10/1 .. 3/31) hours(12)} {dates(4/1 .. 9/30) hours(14)}</code> Runs 12:00 during October through March, and at 14:00 during April through September.</li>
+</ul>
+
+<p>All groups are evaluated to find the next or previous applicable date, and they return which ever date which is closest.  All expressions not inside a <code>{}</code> are collected and implicitly put into a group.</p>
+
+<p>Nesting of groups is not allowed.</p>
+
+<h3>
+<a id="want-to-help" class="anchor" href="#want-to-help" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Want to Help?</h3>
+
+<p>There are already two implementations, but there are several ways to contribute if you're interested.</p>
+
+<ul>
+<li>
+<a href="https://github.com/schyntax/schyntax/blob/master/WritingTests.md">Adding tests</a> to the official cross-library suite.</li>
+<li>
+<a href="https://github.com/schyntax/schyntax/blob/master/Porting.md">Writing ports</a> for other languages.</li>
+<li>Giving input, and contributing towards <a href="https://github.com/schyntax/schyntax/issues/1">roadmap items</a>
+</li>
+</ul>
+
+<p>Bug fixes are always welcome. If possible, try to submit a test with your bug fix. If you would like to contribute features to the schyntax expression language, open an issue on this project with your proposed functionality, syntax changes, and use cases <em>BEFORE</em> you submit a pull request to any of the implementations so that it can be discussed.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
